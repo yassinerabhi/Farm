@@ -1,0 +1,134 @@
+/* Dark theme variables */
+:root.dark-theme {
+  --primary-color: #4caf50;
+  --primary-dark: #388e3c;
+  --primary-light: #2e7d32;
+  --accent-color: #ff9800;
+  --text-primary: #e0e0e0;
+  --text-secondary: #9e9e9e;
+  --bg-color: #121212;
+  --card-color: #1e1e1e;
+  --border-color: #333333;
+  --success-color: #66bb6a;
+  --warning-color: #ffa726;
+  --danger-color: #ef5350;
+  --info-color: #42a5f5;
+}
+
+/* Dark theme overrides */
+.dark-theme body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.dark-theme .sidebar {
+  background-color: #1a1a1a;
+}
+
+.dark-theme .sidebar-menu li a.active {
+  background-color: var(--primary-dark);
+}
+
+.dark-theme .card {
+  background-color: var(--card-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .alert-info {
+  background-color: rgba(33, 150, 243, 0.15);
+}
+
+.dark-theme .alert-warning {
+  background-color: rgba(255, 152, 0, 0.15);
+}
+
+.dark-theme .alert-danger {
+  background-color: rgba(244, 67, 54, 0.15);
+}
+
+.dark-theme .alert-success {
+  background-color: rgba(76, 175, 80, 0.15);
+}
+
+.dark-theme .form-control {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: #444;
+}
+
+.dark-theme .form-control:focus {
+  border-color: var(--primary-color);
+}
+
+.dark-theme .login-container {
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+}
+
+.dark-theme .login-card {
+  background-color: var(--card-color);
+}
+
+.dark-theme .login-title {
+  color: var(--primary-light);
+}
+
+.dark-theme .sensor-icon {
+  color: var(--primary-light);
+}
+
+.dark-theme ::-webkit-scrollbar-track {
+  background: #333;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb {
+  background: #666;
+}
+
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.dark-theme .battery-indicator {
+  background-color: #444;
+}
+
+.dark-theme .theme-switch {
+  background-color: #333;
+  color: var(--text-primary);
+}
+
+.dark-theme .theme-switch:hover {
+  background-color: #444;
+}
+
+.dark-theme table {
+  border-color: var(--border-color);
+}
+
+.dark-theme th {
+  background-color: #333;
+  color: var(--text-primary);
+}
+
+.dark-theme td {
+  border-color: var(--border-color);
+}
+
+.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-theme .dropdown-menu {
+  background-color: var(--card-color);
+  border-color: var(--border-color);
+}
+
+.dark-theme .dropdown-item {
+  color: var(--text-primary);
+}
+
+.dark-theme .dropdown-item:hover,
+.dark-theme .dropdown-item:focus {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}

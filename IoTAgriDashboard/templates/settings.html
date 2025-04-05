@@ -1,0 +1,334 @@
+{% extends "layout.html" %}
+
+{% block title %}Settings | Agricultural IoT Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Paramètres</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Profil de l'appareil</h5>
+            <button class="btn btn-primary btn-sm" id="edit-profile-btn">Modifier</button>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Informations sur le compte</h6>
+                    <table class="table">
+                        <tr>
+                            <th>ID de l'appareil:</th>
+                            <td>{{ device_id }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date d'enregistrement:</th>
+                            <td>{% if device and device.created_at %}{{ device.created_at.strftime('%Y-%m-%d') }}{% else %}Non disponible{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <th>Statut:</th>
+                            <td><span class="badge bg-success">Actif</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Configuration de l'appareil</h6>
+                    <form id="device-form">
+                        <div class="mb-3">
+                            <label for="device-name" class="form-label">Nom de l'appareil</label>
+                            <input type="text" class="form-control" id="device-name" name="device-name" value="{{ device.name if device and device.name else '' }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="device-location" class="form-label">Localisation</label>
+                            <input type="text" class="form-control" id="device-location" name="device-location" value="Sfax, Tunisia" disabled>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary" id="save-profile-btn" style="display: none;">Enregistrer</button>
+                            <button type="button" class="btn btn-secondary" id="cancel-edit-btn" style="display: none;">Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Seuils d'alerte</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6>Humidité du sol</h6>
+                    <div class="threshold-slider">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Min: <span id="moisture-min-value">20</span>%</span>
+                            <span>Max: <span id="moisture-max-value">80</span>%</span>
+                        </div>
+                        <div id="moisture-slider"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Température</h6>
+                    <div class="threshold-slider">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Min: <span id="temp-min-value">10</span>°C</span>
+                            <span>Max: <span id="temp-max-value">35</span>°C</span>
+                        </div>
+                        <div id="temp-slider"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6>pH</h6>
+                    <div class="threshold-slider">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Min: <span id="ph-min-value">5.5</span></span>
+                            <span>Max: <span id="ph-max-value">8.0</span></span>
+                        </div>
+                        <div id="ph-slider"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Conductivité électrique (EC)</h6>
+                    <div class="threshold-slider">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Min: <span id="ec-min-value">500</span> μS/cm</span>
+                            <span>Max: <span id="ec-max-value">3000</span> μS/cm</span>
+                        </div>
+                        <div id="ec-slider"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Batterie</h6>
+                    <div class="threshold-slider">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Alerte: <span id="battery-min-value">20</span>%</span>
+                        </div>
+                        <div id="battery-slider"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <button type="button" class="btn btn-primary" id="save-thresholds-btn">Enregistrer les seuils</button>
+                <button type="button" class="btn btn-secondary" id="reset-thresholds-btn">Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Notifications</h5>
+        </div>
+        <div class="card-body">
+            <form>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="email-alerts" checked>
+                    <label class="form-check-label" for="email-alerts">Alertes par e-mail</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="sms-alerts">
+                    <label class="form-check-label" for="sms-alerts">Alertes par SMS</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="push-alerts" checked>
+                    <label class="form-check-label" for="push-alerts">Notifications push</label>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-primary" id="save-notifications-btn">Enregistrer les préférences</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Editer le profil
+        const editBtn = document.getElementById('edit-profile-btn');
+        const saveBtn = document.getElementById('save-profile-btn');
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        const deviceNameInput = document.getElementById('device-name');
+        const deviceLocationInput = document.getElementById('device-location');
+        
+        let originalName = deviceNameInput.value;
+        let originalLocation = deviceLocationInput.value;
+        
+        editBtn.addEventListener('click', function() {
+            deviceNameInput.disabled = false;
+            deviceLocationInput.disabled = false;
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
+        });
+        
+        cancelBtn.addEventListener('click', function() {
+            deviceNameInput.value = originalName;
+            deviceLocationInput.value = originalLocation;
+            deviceNameInput.disabled = true;
+            deviceLocationInput.disabled = true;
+            editBtn.style.display = 'block';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        });
+        
+        document.getElementById('device-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get updated values
+            const newName = deviceNameInput.value;
+            
+            // Send update to server
+            fetch('/api/update-device', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: newName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Profil mis à jour avec succès', 'success');
+                    originalName = newName;
+                    deviceNameInput.disabled = true;
+                    deviceLocationInput.disabled = true;
+                    editBtn.style.display = 'block';
+                    saveBtn.style.display = 'none';
+                    cancelBtn.style.display = 'none';
+                } else {
+                    showAlert('Échec de la mise à jour du profil', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Une erreur s\'est produite', 'danger');
+            });
+        });
+        
+        // Créer les sliders noUiSlider
+        const moistureSlider = document.getElementById('moisture-slider');
+        const tempSlider = document.getElementById('temp-slider');
+        const phSlider = document.getElementById('ph-slider');
+        const ecSlider = document.getElementById('ec-slider');
+        const batterySlider = document.getElementById('battery-slider');
+        
+        noUiSlider.create(moistureSlider, {
+            start: [20, 80],
+            connect: true,
+            step: 1,
+            range: {
+                'min': [0],
+                'max': [100]
+            }
+        });
+        
+        noUiSlider.create(tempSlider, {
+            start: [10, 35],
+            connect: true,
+            step: 1,
+            range: {
+                'min': [0],
+                'max': [50]
+            }
+        });
+        
+        noUiSlider.create(phSlider, {
+            start: [5.5, 8.0],
+            connect: true,
+            step: 0.1,
+            range: {
+                'min': [0],
+                'max': [14]
+            }
+        });
+        
+        noUiSlider.create(ecSlider, {
+            start: [500, 3000],
+            connect: true,
+            step: 100,
+            range: {
+                'min': [0],
+                'max': [5000]
+            }
+        });
+        
+        noUiSlider.create(batterySlider, {
+            start: [20],
+            connect: [true, false],
+            step: 1,
+            range: {
+                'min': [0],
+                'max': [100]
+            }
+        });
+        
+        // Mettre à jour les valeurs affichées
+        moistureSlider.noUiSlider.on('update', function (values, handle) {
+            document.getElementById('moisture-min-value').textContent = Math.round(values[0]);
+            document.getElementById('moisture-max-value').textContent = Math.round(values[1]);
+        });
+        
+        tempSlider.noUiSlider.on('update', function (values, handle) {
+            document.getElementById('temp-min-value').textContent = Math.round(values[0]);
+            document.getElementById('temp-max-value').textContent = Math.round(values[1]);
+        });
+        
+        phSlider.noUiSlider.on('update', function (values, handle) {
+            document.getElementById('ph-min-value').textContent = values[0];
+            document.getElementById('ph-max-value').textContent = values[1];
+        });
+        
+        ecSlider.noUiSlider.on('update', function (values, handle) {
+            document.getElementById('ec-min-value').textContent = Math.round(values[0]);
+            document.getElementById('ec-max-value').textContent = Math.round(values[1]);
+        });
+        
+        batterySlider.noUiSlider.on('update', function (values, handle) {
+            document.getElementById('battery-min-value').textContent = Math.round(values[0]);
+        });
+        
+        // Gestion des boutons de seuil
+        document.getElementById('save-thresholds-btn').addEventListener('click', function() {
+            showAlert('Seuils enregistrés avec succès', 'success');
+        });
+        
+        document.getElementById('reset-thresholds-btn').addEventListener('click', function() {
+            moistureSlider.noUiSlider.set([20, 80]);
+            tempSlider.noUiSlider.set([10, 35]);
+            phSlider.noUiSlider.set([5.5, 8.0]);
+            ecSlider.noUiSlider.set([500, 3000]);
+            batterySlider.noUiSlider.set([20]);
+        });
+        
+        // Gestion des notifications
+        document.getElementById('save-notifications-btn').addEventListener('click', function() {
+            showAlert('Préférences de notification enregistrées', 'success');
+        });
+    });
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        document.querySelector('.container-fluid').prepend(alertDiv);
+        
+        // Fermer automatiquement après 5 secondes
+        setTimeout(() => {
+            const bsAlert = new bootstrap.Alert(alertDiv);
+            bsAlert.close();
+        }, 5000);
+    }
+</script>
+{% endblock %}

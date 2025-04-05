@@ -1,0 +1,142 @@
+
+@app.route('/data', methods=['POST'])
+def data():
+    logger.info("Received POST request to /data")
+    if not request.is_json:
+        logger.error("Request is not JSON")
+        return jsonify(error="La requête doit être en format JSON. 😕"), 400
+
+    try:
+        content = request.json
+        logger.info(f"Received JSON content: {content}")
+
+        device_id = content.get('device_id')
+        if not device_id:
+            logger.error("device_id is missing in the JSON payload")
+            return jsonify(error="L'ID de l'appareil est requis. Vous l'avez oublié ? 🤔"), 400
+
+        logger.info(f"Processing data for device {device_id}")
+
+        validated_content = validate_sensor_data(content)
+
+        conn = get_db_connection(device_id)
+        cursor = conn.cursor()
+
+        agri_params = calculate_agricultural_parameters(validated_content)
+
+        weather_data = get_weather_data()
+
+        formatted_values = tuple(format_value(v) for v in [
+            content.get('battv', 0.0),
+            content.get('battpc', 0),
+            content.get('moisture', 0.0),
+            content.get('temperature', 0.0),
+            content.get('ec', 0),            
+            content.get('ph', 0.0),
+            content.get('nitrogen', 0),
+            content.get('phosphorous', 0),
+            content.get('potassium', 0),
+            content.get('salinity', 0.0),
+            content.get('bme_temperature', 0.0),
+            content.get('bme_humidity', 0.0),
+            content.get('bme_pressure', 0.0),
+            content.get('bme_gas', 0.0),
+            content.get('uv_index', 0.0),
+            content.get('pluie', 0),
+            content.get('wakeup_reason', ''),
+            agri_params['water_stress_index'],
+            agri_params['soil_fertility_index'],
+            agri_params['estimated_yield'],
+            agri_params['disease_risk'],
+            agri_params['irrigation_recommendation'],
+            agri_params['air_quality_index'],
+            agri_params['evapotranspiration'],
+            agri_params['vpd'],
+            agri_params['gdd'],
+            agri_params['soil_moisture_deficit'],
+            agri_params['cwsi'],
+            weather_data['temperature'] if weather_data else None,
+            weather_data['humidity'] if weather_data else None,
+            weather_data['description'] if weather_data else None,
+            weather_data['current_weather_description'] if weather_data else None,
+            weather_data['current_wind_speed'] if weather_data else None,
+            weather_data['current_wind_deg'] if weather_data else None,
+            weather_data['cloudiness'] if weather_data else None,
+            weather_data['rain'] if weather_data else None,
+            weather_data['snow'] if weather_data else None,
+            weather_data['sunrise'] if weather_data else None,
+            weather_data['sunset'] if weather_data else None,
+            content.get('sodium', 0.0),
+            content.get('calcium', 0.0),
+            content.get('magnesium', 0.0),
+            content.get('cec', 0.0),
+            content.get('organic_matter', 0.0),
+            content.get('clay_content', 0.0)
+        ])
+
+        cursor.execute("""
+            INSERT INTO SENSOR_DATA (
+                battv, battpc, MOISTURE, TEMPERATURE, EC, PH, NITROGEN, PHOSPHOROUS, POTASSIUM, SALINITY, 
+                BME_TEMPERATURE, BME_HUMIDITY, BME_PRESSURE, BME_GAS, UV_INDEX, pluie, wakeup_reason,
+                water_stress_index, soil_fertility_index, estimated_yield, disease_risk, irrigation_recommendation,
+                air_quality_index, evapotranspiration, vpd, gdd, soil_moisture_deficit, cwsi,
+                weather_temperature, weather_humidity, weather_description,
+                current_weather_description, current_wind_speed, current_wind_deg, cloudiness, rain, snow, sunrise, sunset,
+                SODIUM, CALCIUM, MAGNESIUM, CEC, ORGANIC_MATTER, CLAY_CONTENT
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, formatted_values)
+
+        conn.commit()
+        conn.close()
+
+        logger.info(f"Data successfully inserted for device {device_id}")
+
+        return jsonify(message='Données reçues et enregistrées avec succès ! 🎉'), 200
+    except Exception as e:
+        logger.error(f"Error in data route: {str(e)}")
+        return jsonify(error=f"Oups ! Une erreur s'est produite : {str(e)}. On réessaie ? 🔄"), 500
+
+@app.route('/get_sensor_data/<device_id>')
+def get_sensor_data(device_id):
+    logger.info(f"Received GET request for sensor data of device {device_id}")
+    try:
+        conn = get_db_connection(device_id)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='SENSOR_DATA'")
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify(message="En attente de données du capteur"), 200
+
+        cursor.execute("SELECT * FROM SENSOR_DATA ORDER BY Time DESC")
+        data = cursor.fetchall()
+        conn.close()
+
+        if not data:
+            return jsonify(message="En attente de données du capteur"), 200
+
+        formatted_data = format_sensor_data(data)
+
+        logger.info(f"Successfully retrieved and formatted data for device {device_id}")
+        return jsonify(formatted_data)
+    except Exception as e:
+        logger.error(f"Error in get_sensor_data route for device {device_id}: {str(e)}")
+        return jsonify(error=str(e)), 500
+
+def format_sensor_data(data: List[sqlite3.Row]) -> List[List[Any]]:
+    formatted_data = []
+    for row in data:
+        formatted_row = list(row)
+        if isinstance(formatted_row[1], str):
+            try:
+                dt = datetime.strptime(formatted_row[1], '%Y-%m-%d %H:%M:%S')
+                formatted_row[1] = dt.strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                pass
+        elif isinstance(formatted_row[1], datetime):
+            formatted_row[1] = formatted_row[1].strftime('%Y-%m-%d %H:%M:%S')
+
+        formatted_row[2:] = [format_value(val) for val in formatted_row[2:]]
+        formatted_data.append(formatted_row)
+    return formatted_data

@@ -1,0 +1,73 @@
+{
+  "dashboard_title": "Dashboard",
+  "history_title": "History",
+  "reports_title": "Reports",
+  "weather_title": "Weather",
+  "settings_title": "Settings",
+  "chatbot_title": "Agricultural Assistant",
+  "login_title": "Login",
+  "logout_title": "Logout",
+  
+  "moisture": "Soil Moisture",
+  "temperature": "Temperature",
+  "ec": "Electrical Conductivity",
+  "ph": "pH",
+  "nitrogen": "Nitrogen",
+  "phosphorous": "Phosphorus",
+  "potassium": "Potassium",
+  "salinity": "Salinity",
+  "bme_temperature": "Ambient Temperature",
+  "bme_humidity": "Ambient Humidity",
+  "bme_pressure": "Atmospheric Pressure",
+  "uv_index": "UV Index",
+  "rain_level": "Rain Level",
+  "battery": "Battery",
+  
+  "water_stress_index": "Water Stress Index",
+  "soil_fertility_index": "Soil Fertility Index",
+  "disease_risk": "Disease Risk",
+  "irrigation_recommendation": "Irrigation Recommendation",
+  
+  "alerts": "Alerts",
+  "no_alerts": "No alerts",
+  "sensor_data": "Sensor Data",
+  "last_updated": "Last updated",
+  "device_info": "Device Information",
+  "chat_with_assistant": "Chat with Assistant",
+  "ask_question": "Ask your question...",
+  "send": "Send",
+  
+  "suggested_questions": "Suggested Questions",
+  "question_moisture": "How to improve soil moisture?",
+  "question_fertilizer": "What fertilizer should I use for my crops?",
+  "question_disease": "How to prevent plant diseases?",
+  "question_irrigation": "When should I irrigate my crops?",
+  
+  "analysis_title": "Analysis and Recommendations",
+  "no_analysis": "No analysis available",
+  "generate_analysis": "Generate Analysis",
+  
+  "weather_forecast": "Weather Forecast",
+  "current_weather": "Current Weather",
+  "feels_like": "Feels Like",
+  "wind": "Wind",
+  "humidity": "Humidity",
+  "pressure": "Pressure",
+  "clouds": "Clouds",
+  "precipitation": "Precipitation",
+  
+  "settings_language": "Language",
+  "settings_theme": "Theme",
+  "settings_notifications": "Notifications",
+  "settings_units": "Units",
+  "settings_save": "Save",
+  
+  "light_theme": "Light Theme",
+  "dark_theme": "Dark Theme",
+  
+  "welcome_message": "Welcome to your Intelligent Agricultural Assistant",
+  "assistant_intro": "Hello! I'm your intelligent agricultural assistant. How can I help you today?",
+  
+  "error_message": "An error occurred",
+  "loading_message": "Loading..."
+}

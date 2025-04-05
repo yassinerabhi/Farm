@@ -1,0 +1,73 @@
+{
+  "dashboard_title": "لوحة التحكم",
+  "history_title": "السجل",
+  "reports_title": "التقارير",
+  "weather_title": "الطقس",
+  "settings_title": "الإعدادات",
+  "chatbot_title": "المساعد الزراعي",
+  "login_title": "تسجيل الدخول",
+  "logout_title": "تسجيل الخروج",
+  
+  "moisture": "رطوبة التربة",
+  "temperature": "درجة الحرارة",
+  "ec": "التوصيل الكهربائي",
+  "ph": "درجة الحموضة",
+  "nitrogen": "النيتروجين",
+  "phosphorous": "الفوسفور",
+  "potassium": "البوتاسيوم",
+  "salinity": "الملوحة",
+  "bme_temperature": "درجة الحرارة المحيطة",
+  "bme_humidity": "الرطوبة المحيطة",
+  "bme_pressure": "الضغط الجوي",
+  "uv_index": "مؤشر الأشعة فوق البنفسجية",
+  "rain_level": "مستوى الأمطار",
+  "battery": "البطارية",
+  
+  "water_stress_index": "مؤشر الإجهاد المائي",
+  "soil_fertility_index": "مؤشر خصوبة التربة",
+  "disease_risk": "خطر المرض",
+  "irrigation_recommendation": "توصية الري",
+  
+  "alerts": "التنبيهات",
+  "no_alerts": "لا توجد تنبيهات",
+  "sensor_data": "بيانات المستشعر",
+  "last_updated": "آخر تحديث",
+  "device_info": "معلومات الجهاز",
+  "chat_with_assistant": "الدردشة مع المساعد",
+  "ask_question": "اسأل سؤالك...",
+  "send": "إرسال",
+  
+  "suggested_questions": "أسئلة مقترحة",
+  "question_moisture": "كيف يمكن تحسين رطوبة التربة؟",
+  "question_fertilizer": "ما هو السماد الذي يجب استخدامه لمحاصيلي؟",
+  "question_disease": "كيف يمكن الوقاية من أمراض النبات؟",
+  "question_irrigation": "متى يجب ري محاصيلي؟",
+  
+  "analysis_title": "التحليل والتوصيات",
+  "no_analysis": "لا يوجد تحليل متاح",
+  "generate_analysis": "إنشاء تحليل",
+  
+  "weather_forecast": "توقعات الطقس",
+  "current_weather": "الطقس الحالي",
+  "feels_like": "الشعور كأنه",
+  "wind": "الرياح",
+  "humidity": "الرطوبة",
+  "pressure": "الضغط",
+  "clouds": "الغيوم",
+  "precipitation": "هطول الأمطار",
+  
+  "settings_language": "اللغة",
+  "settings_theme": "السمة",
+  "settings_notifications": "الإشعارات",
+  "settings_units": "الوحدات",
+  "settings_save": "حفظ",
+  
+  "light_theme": "السمة الفاتحة",
+  "dark_theme": "السمة الداكنة",
+  
+  "welcome_message": "مرحبًا بك في مساعدك الزراعي الذكي",
+  "assistant_intro": "مرحبًا! أنا مساعدك الزراعي الذكي. كيف يمكنني مساعدتك اليوم؟",
+  
+  "error_message": "حدث خطأ",
+  "loading_message": "جاري التحميل..."
+}

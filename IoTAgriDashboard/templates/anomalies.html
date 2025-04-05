@@ -1,0 +1,310 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ get_translation('anomaly_detection_title') }}{% endblock %}
+
+{% block additional_head %}
+<style>
+    .anomaly-card {
+        border-left: 4px solid #dc3545;
+        transition: all 0.3s ease;
+    }
+    
+    .anomaly-card.warning {
+        border-left-color: #ffc107;
+    }
+    
+    .anomaly-card.danger {
+        border-left-color: #dc3545;
+    }
+    
+    .anomaly-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .train-btn {
+        margin-top: 20px;
+    }
+    
+    .score-indicator {
+        width: 100%;
+        height: 6px;
+        background-color: #e9ecef;
+        border-radius: 3px;
+        margin-top: 5px;
+    }
+    
+    .score-indicator .bar {
+        height: 100%;
+        border-radius: 3px;
+    }
+    
+    .score-level-low {
+        background-color: #28a745;
+    }
+    
+    .score-level-med {
+        background-color: #ffc107;
+    }
+    
+    .score-level-high {
+        background-color: #dc3545;
+    }
+    
+    .model-badge {
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        margin-left: 10px;
+    }
+    
+    .parameter-icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>{{ get_translation('anomaly_detection_title') }}</h4>
+                </div>
+                <div class="card-body">
+                    <p>{{ get_translation('anomaly_detection_description') }}</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        {{ get_translation('anomaly_detection_info') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ get_translation('train_models_title') }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ get_translation('train_models_description') }}</p>
+                    
+                    <div class="form-group">
+                        <label>{{ get_translation('select_parameters') }}</label>
+                        <div class="row">
+                            {% for param in ['temperature', 'moisture', 'ph', 'ec', 'nitrogen', 'phosphorous', 'potassium', 'bme_temperature', 'bme_humidity', 'bme_pressure', 'uv_index'] %}
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input parameter-checkbox" type="checkbox" value="{{ param }}" id="param_{{ param }}" checked>
+                                    <label class="form-check-label" for="param_{{ param }}">
+                                        {{ get_translation(param) }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <button id="trainModelsBtn" class="btn btn-primary mt-3">
+                        <i class="fas fa-brain me-2"></i> {{ get_translation('train_models_button') }}
+                    </button>
+                    
+                    <div id="trainingProgress" class="progress mt-3 d-none">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ get_translation('how_it_works_title') }}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <i class="fas fa-database text-primary me-2"></i> 
+                            {{ get_translation('how_it_works_data') }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-cogs text-primary me-2"></i> 
+                            {{ get_translation('how_it_works_algorithm') }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-search text-primary me-2"></i> 
+                            {{ get_translation('how_it_works_detection') }}
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-bell text-primary me-2"></i> 
+                            {{ get_translation('how_it_works_alerts') }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{ get_translation('detected_anomalies_title') }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if anomaly_alerts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{{ get_translation('parameter') }}</th>
+                                        <th>{{ get_translation('alert_message') }}</th>
+                                        <th>{{ get_translation('timestamp') }}</th>
+                                        <th>{{ get_translation('alert_level') }}</th>
+                                        <th>{{ get_translation('status') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for alert in anomaly_alerts %}
+                                    <tr>
+                                        <td>
+                                            {% if alert.type == 'temperature' %}
+                                                <i class="fas fa-thermometer-half text-danger parameter-icon"></i>
+                                            {% elif alert.type == 'moisture' %}
+                                                <i class="fas fa-tint text-primary parameter-icon"></i>
+                                            {% elif alert.type == 'ph' %}
+                                                <i class="fas fa-flask text-info parameter-icon"></i>
+                                            {% elif alert.type == 'ec' %}
+                                                <i class="fas fa-bolt text-warning parameter-icon"></i>
+                                            {% elif alert.type == 'nitrogen' %}
+                                                <i class="fas fa-leaf text-success parameter-icon"></i>
+                                            {% elif alert.type == 'phosphorous' %}
+                                                <i class="fas fa-seedling text-success parameter-icon"></i>
+                                            {% elif alert.type == 'potassium' %}
+                                                <i class="fas fa-atom text-success parameter-icon"></i>
+                                            {% else %}
+                                                <i class="fas fa-chart-line parameter-icon"></i>
+                                            {% endif %}
+                                            {{ get_translation(alert.type) }}
+                                        </td>
+                                        <td>{{ alert.message }}</td>
+                                        <td>{{ alert.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                                        <td>
+                                            {% if alert.level == 'info' %}
+                                                <span class="badge bg-info">{{ get_translation('info') }}</span>
+                                            {% elif alert.level == 'warning' %}
+                                                <span class="badge bg-warning">{{ get_translation('warning') }}</span>
+                                            {% elif alert.level == 'danger' %}
+                                                <span class="badge bg-danger">{{ get_translation('danger') }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if alert.acknowledged %}
+                                                <span class="badge bg-success">{{ get_translation('acknowledged') }}</span>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-primary acknowledge-btn" data-alert-id="{{ alert.id }}">
+                                                    {{ get_translation('acknowledge') }}
+                                                </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i> {{ get_translation('no_anomalies_detected') }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const trainModelsBtn = document.getElementById('trainModelsBtn');
+        const trainingProgress = document.getElementById('trainingProgress');
+        const acknowledgeBtns = document.querySelectorAll('.acknowledge-btn');
+        
+        // Handle train models button click
+        if (trainModelsBtn) {
+            trainModelsBtn.addEventListener('click', function() {
+                // Get selected parameters
+                const selectedParams = [];
+                document.querySelectorAll('.parameter-checkbox:checked').forEach(checkbox => {
+                    selectedParams.push(checkbox.value);
+                });
+                
+                if (selectedParams.length === 0) {
+                    alert("{{ get_translation('select_at_least_one_parameter') }}");
+                    return;
+                }
+                
+                // Show progress
+                trainingProgress.classList.remove('d-none');
+                trainModelsBtn.disabled = true;
+                
+                // Call API to train models
+                fetch('/api/train-anomaly-models', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        parameters: selectedParams
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert("{{ get_translation('training_error') }}: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("{{ get_translation('training_error') }}: " + error);
+                })
+                .finally(() => {
+                    trainingProgress.classList.add('d-none');
+                    trainModelsBtn.disabled = false;
+                });
+            });
+        }
+        
+        // Handle acknowledge buttons
+        acknowledgeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const alertId = this.getAttribute('data-alert-id');
+                
+                fetch(`/api/acknowledge-alert/${alertId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Replace button with acknowledged badge
+                        this.parentNode.innerHTML = `<span class="badge bg-success">{{ get_translation('acknowledged') }}</span>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("{{ get_translation('error') }}: " + error);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

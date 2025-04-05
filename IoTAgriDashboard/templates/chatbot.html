@@ -1,0 +1,219 @@
+{% extends "layout.html" %}
+{% block title %}{{ get_translation('chatbot_title') }}{% endblock %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4 assistant-card">
+            <div class="card-header assistant-header">
+                <h5><i class="fas fa-robot me-2 assistant-icon"></i>{{ get_translation('chatbot_title') }}</h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- Chat messages container -->
+                <div id="chat-messages" class="chat-container">
+                    <!-- Initial welcome message -->
+                    <div class="chat-message ai-message animate-message">
+                        <div class="chat-avatar assistant-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="chat-bubble">
+                            <p>{{ get_translation('assistant_intro') }}</p>
+                            <p>{{ get_translation('chat_with_assistant') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Typing indicator -->
+                    <div id="typing-indicator" class="d-none">
+                        <div class="chat-message ai-message">
+                            <div class="chat-avatar assistant-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat input form -->
+                <div class="card-footer bg-transparent">
+                    <form id="chat-form" class="chat-input-container">
+                        <div class="input-group">
+                            <input type="text" id="user-input" class="form-control" placeholder="{{ get_translation('ask_question') }}" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button type="button" id="clear-chat" class="btn btn-outline-secondary">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Indicateur de connexion IoT -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-wifi me-2 iot-connection-indicator"></i>{{ get_translation('device_info') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="mb-0"><strong>{{ get_translation('last_updated') }}:</strong> <span id="last-connection-time">À l'instant</span></p>
+                    </div>
+                    <div>
+                        <span class="badge bg-success connection-indicator">{{ get_translation('sensor_data') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb me-2 pulse-alert"></i>{{ get_translation('suggested_questions') }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <button class="list-group-item list-group-item-action suggested-question farming-tip">{{ get_translation('question_moisture') }}</button>
+                    <button class="list-group-item list-group-item-action suggested-question">{{ get_translation('question_fertilizer') }}</button>
+                    <button class="list-group-item list-group-item-action suggested-question">{{ get_translation('question_disease') }}</button>
+                    <button class="list-group-item list-group-item-action suggested-question">{{ get_translation('question_irrigation') }}</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-history me-2"></i>{{ get_translation('analysis_title') }}</h5>
+                <div>
+                    <button id="generate-analysis" class="btn btn-sm btn-outline-success me-2">
+                        <i class="fas fa-brain"></i> {{ get_translation('generate_analysis') }}
+                    </button>
+                    <button id="refresh-analyses" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-sync-alt rotate-icon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ get_translation('last_updated') }}</th>
+                                <th>{{ get_translation('analysis_title') }}</th>
+                                <th>{{ get_translation('irrigation_recommendation') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyses-table">
+                            <tr>
+                                <td colspan="3" class="text-center">{{ get_translation('no_analysis') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Widget pour afficher une recommandation importante -->
+        <div class="card mt-4 important-recommendation">
+            <div class="card-header bg-success text-white">
+                <h5><i class="fas fa-exclamation-circle me-2"></i>{{ get_translation('irrigation_recommendation') }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="farming-tip">{{ get_translation('welcome_message') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+<script>
+// Script spécifique pour les animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour appliquer l'animation aux nouveaux messages
+    function applyMessageAnimation() {
+        const messages = document.querySelectorAll('.chat-message:not(.animate-applied)');
+        messages.forEach(message => {
+            message.classList.add('animate-message', 'animate-applied');
+        });
+    }
+
+    // Appliquer l'animation aux messages existants
+    applyMessageAnimation();
+
+    // Observer les changements dans le conteneur de chat pour animer les nouveaux messages
+    const chatContainer = document.getElementById('chat-messages');
+    const observer = new MutationObserver(function(mutations) {
+        applyMessageAnimation();
+    });
+    
+    observer.observe(chatContainer, { childList: true, subtree: true });
+
+    // Animation pour les questions suggérées
+    const suggestedQuestions = document.querySelectorAll('.suggested-question');
+    suggestedQuestions.forEach((question, index) => {
+        setTimeout(() => {
+            question.classList.add('animate-message');
+        }, 100 * index);
+    });
+    
+    // Mise à jour du temps de dernière connexion toutes les minutes
+    function updateLastConnectionTime() {
+        const lastConnectionTime = document.getElementById('last-connection-time');
+        const date = new Date();
+        lastConnectionTime.textContent = date.toLocaleTimeString();
+        lastConnectionTime.classList.add('data-updated');
+        setTimeout(() => {
+            lastConnectionTime.classList.remove('data-updated');
+        }, 2000);
+    }
+    
+    // Mettre à jour le temps de connexion toutes les 60 secondes
+    setInterval(updateLastConnectionTime, 60000);
+    
+    // Animation initiale de l'assistant
+    const assistantHeader = document.querySelector('.assistant-header');
+    if (assistantHeader) {
+        assistantHeader.classList.add('gradient-shift');
+    }
+
+    // Gestionnaire pour le bouton de génération d'analyse
+    document.getElementById('generate-analysis').addEventListener('click', function() {
+        // Afficher un indicateur de chargement
+        document.getElementById('analyses-table').innerHTML = '<tr><td colspan="3" class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> ' + document.querySelector("html").getAttribute("lang") + '</td></tr>';
+        
+        // Appeler l'API pour générer une analyse dans la langue actuelle
+        fetch('/api/generate-analysis-in-language', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Rafraîchir la liste des analyses
+                refreshAnalyses();
+            } else {
+                document.getElementById('analyses-table').innerHTML = '<tr><td colspan="3" class="text-center text-danger">' + data.error + '</td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('analyses-table').innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error generating analysis</td></tr>';
+        });
+    });
+});
+</script>
+{% endblock %}

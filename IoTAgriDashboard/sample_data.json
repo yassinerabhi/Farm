@@ -1,0 +1,20 @@
+{
+  "device_id": "R1WXBJC3YSQA",
+  "battv": 3.98,
+  "battpc": 85,
+  "moisture": 45.2,
+  "temperature": 24.5,
+  "ec": 1280,
+  "ph": 6.7,
+  "nitrogen": 120,
+  "phosphorous": 35,
+  "potassium": 200,
+  "salinity": 0.8,
+  "bme_temperature": 25.3,
+  "bme_humidity": 68.5,
+  "bme_pressure": 1013.2,
+  "bme_gas": 45.8,
+  "uv_index": 6.2,
+  "pluie": 15,
+  "wakeup_reason": "timer"
+}

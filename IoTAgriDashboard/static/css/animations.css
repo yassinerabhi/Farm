@@ -1,0 +1,267 @@
+/* Animations pour l'Assistant IA Agricole */
+
+/* Animation d'entrée pour les messages */
+@keyframes message-appear {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation pour l'indicateur de frappe */
+@keyframes typing-dot {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Animation de pulse pour les indicateurs d'attention */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animation pour les transitions d'état (comme les alertes) */
+@keyframes fade-in-out {
+    0% {
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Animation de rotation pour les icônes de chargement */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animation pour les recommandations agricoles */
+@keyframes highlight-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+/* Animation pour l'effet de pluie */
+@keyframes rain-drop {
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    70% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+}
+
+/* Animation pour l'effet de soleil */
+@keyframes sun-rays {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 0 20px rgba(255, 235, 59, 0);
+    }
+}
+
+/* Animation pour l'icône de germination */
+@keyframes grow-plant {
+    0% {
+        transform: scaleY(0.2);
+        transform-origin: bottom;
+    }
+    100% {
+        transform: scaleY(1);
+        transform-origin: bottom;
+    }
+}
+
+/* Classes d'animation applicables */
+.animate-message {
+    animation: message-appear 0.5s ease-out forwards;
+}
+
+.typing-indicator span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #666;
+    margin: 0 2px;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation: typing-dot 1s infinite 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation: typing-dot 1s infinite 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation: typing-dot 1s infinite 0.4s;
+}
+
+.pulse-alert {
+    animation: pulse 1.5s infinite;
+}
+
+.fade-notification {
+    animation: fade-in-out 4s forwards;
+}
+
+.rotate-icon {
+    animation: rotate 2s linear infinite;
+}
+
+.highlight-recommendation {
+    animation: highlight-pulse 2s infinite;
+}
+
+/* Animation pour la carte météo */
+.weather-icon.rain {
+    position: relative;
+}
+
+.weather-icon.rain:after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 10px;
+    background: #4a9aff;
+    border-radius: 2px;
+    animation: rain-drop 1.5s infinite;
+}
+
+.weather-icon.sun {
+    animation: sun-rays 2s infinite;
+}
+
+.growth-icon {
+    animation: grow-plant 1.5s ease-out;
+}
+
+/* Conteneur d'animations pour l'assistant chatbot */
+.assistant-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #4CAF50, #2196F3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.assistant-avatar:before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent 25%, rgba(255,255,255,0.2) 50%, transparent 75%);
+    background-size: 200% 200%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 200%;
+    }
+    100% {
+        background-position: -200% -200%;
+    }
+}
+
+/* Animation pour les éléments de données qui changent */
+.data-value-change {
+    transition: color 0.5s ease;
+}
+
+.data-value-change.increase {
+    color: #4CAF50;
+}
+
+.data-value-change.decrease {
+    color: #F44336;
+}
+
+/* Animation pour les conseils agricoles */
+.farming-tip {
+    position: relative;
+    padding-left: 25px;
+}
+
+.farming-tip:before {
+    content: '🌱';
+    position: absolute;
+    left: 0;
+    top: 0;
+    animation: grow-plant 1s ease-out;
+}
+
+/* Animation pour les alertes de seuil */
+.threshold-alert {
+    position: relative;
+    overflow: hidden;
+}
+
+.threshold-alert:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(244, 67, 54, 0.1);
+    transform: translateX(-100%);
+    animation: threshold-wave 2s infinite;
+}
+
+@keyframes threshold-wave {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}

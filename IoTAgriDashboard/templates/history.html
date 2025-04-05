@@ -1,0 +1,515 @@
+{% extends "layout.html" %}
+
+{% block title %}History - AgriIoT{% endblock %}
+
+{% block additional_head %}
+<!-- Date range picker dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chart-line"></i> Historical Data</h1>
+    <p class="text-muted">View and analyze historical sensor data</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Data Filters</h5>
+    </div>
+    <div class="card-body">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <span class="filter-label">Time Period:</span>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('history', period='1d') }}" class="btn btn{% if period != '1d' %}-outline{% endif %}-primary">Day</a>
+                    <a href="{{ url_for('history', period='1w') }}" class="btn btn{% if period != '1w' %}-outline{% endif %}-primary">Week</a>
+                    <a href="{{ url_for('history', period='1m') }}" class="btn btn{% if period != '1m' %}-outline{% endif %}-primary">Month</a>
+                    <a href="{{ url_for('history', period='1y') }}" class="btn btn{% if period != '1y' %}-outline{% endif %}-primary">Year</a>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">Parameter:</span>
+                <select id="param-selector" class="form-select">
+                    <option value="temperature">Soil Temperature</option>
+                    <option value="moisture">Soil Moisture</option>
+                    <option value="ph">Soil pH</option>
+                    <option value="ec">Electrical Conductivity</option>
+                    <option value="nitrogen">Nitrogen</option>
+                    <option value="phosphorous">Phosphorous</option>
+                    <option value="potassium">Potassium</option>
+                    <option value="bme_temperature">Air Temperature</option>
+                    <option value="bme_humidity">Humidity</option>
+                    <option value="bme_pressure">Pressure</option>
+                    <option value="uv_index">UV Index</option>
+                    <option value="rain_level">Rain Level</option>
+                </select>
+            </div>
+            
+            <div class="filter-group ms-auto">
+                <button id="compare-btn" class="btn btn-outline-secondary">
+                    <i class="fas fa-exchange-alt"></i> Compare
+                </button>
+                <button id="export-csv-btn" class="btn btn-outline-secondary">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+            </div>
+        </div>
+        
+        <!-- Custom date range -->
+        <div id="date-range-container" class="mt-3 d-none">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text">From</span>
+                        <input type="date" id="custom-start-date" class="form-control" value="{{ start_date.strftime('%Y-%m-%d') }}">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text">To</span>
+                        <input type="date" id="custom-end-date" class="form-control" value="{{ end_date.strftime('%Y-%m-%d') }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button id="apply-date-range" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison mode -->
+        <div id="comparison-container" class="mt-3 d-none">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label>First Period</label>
+                        <input type="text" id="period-1" class="form-control date-range" placeholder="Select date range">
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label>Second Period</label>
+                        <input type="text" id="period-2" class="form-control date-range" placeholder="Select date range">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <button id="compare-periods" class="btn btn-primary w-100">Compare</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title" id="chart-title">Chart</h5>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-secondary active" id="view-line">Line</button>
+            <button class="btn btn-sm btn-outline-secondary" id="view-bar">Bar</button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="chart-container" class="chart-container">
+            <canvas id="main-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title">Data Table</h5>
+        <div>
+            <select id="table-rows" class="form-select form-select-sm" style="width: auto;">
+                <option value="10">10 rows</option>
+                <option value="25">25 rows</option>
+                <option value="50">50 rows</option>
+                <option value="100">100 rows</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Moisture (%)</th>
+                        <th>Temperature (°C)</th>
+                        <th>pH</th>
+                        <th>EC (µS/cm)</th>
+                        <th>N (mg/kg)</th>
+                        <th>P (mg/kg)</th>
+                        <th>K (mg/kg)</th>
+                        <th>Air Temp (°C)</th>
+                        <th>Humidity (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data %}
+                        {% for entry in data %}
+                            <tr>
+                                <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ "%.1f"|format(entry.moisture) if entry.moisture else "--" }}</td>
+                                <td>{{ "%.1f"|format(entry.temperature) if entry.temperature else "--" }}</td>
+                                <td>{{ "%.1f"|format(entry.ph) if entry.ph else "--" }}</td>
+                                <td>{{ entry.ec if entry.ec else "--" }}</td>
+                                <td>{{ entry.nitrogen if entry.nitrogen else "--" }}</td>
+                                <td>{{ entry.phosphorous if entry.phosphorous else "--" }}</td>
+                                <td>{{ entry.potassium if entry.potassium else "--" }}</td>
+                                <td>{{ "%.1f"|format(entry.bme_temperature) if entry.bme_temperature else "--" }}</td>
+                                <td>{{ "%.1f"|format(entry.bme_humidity) if entry.bme_humidity else "--" }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="10" class="text-center">No data available for the selected period.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                <span class="text-muted">Showing 
+                    {% if data %}
+                        1 to {{ data|length }}
+                    {% else %}
+                        0
+                    {% endif %} 
+                    of {{ data|length if data else 0 }} entries
+                </span>
+            </div>
+            <div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title">Statistical Analysis</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Temperature Stats -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-thermometer-half"></i> Temperature</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Minimum
+                                <span>
+                                    {% if data %}
+                                        {% set temp_values = data|map(attribute='temperature')|reject('none')|list %}
+                                        {% if temp_values %}
+                                            {{ "%.1f"|format(temp_values|min) }}°C
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Maximum
+                                <span>
+                                    {% if data %}
+                                        {% set temp_values = data|map(attribute='temperature')|reject('none')|list %}
+                                        {% if temp_values %}
+                                            {{ "%.1f"|format(temp_values|max) }}°C
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Average
+                                <span>
+                                    {% if data %}
+                                        {% set temp_values = data|map(attribute='temperature')|reject('none')|list %}
+                                        {% if temp_values %}
+                                            {{ "%.1f"|format(temp_values|sum / temp_values|length) }}°C
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Moisture Stats -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-tint"></i> Moisture</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Minimum
+                                <span>
+                                    {% if data %}
+                                        {% set moist_values = data|map(attribute='moisture')|reject('none')|list %}
+                                        {% if moist_values %}
+                                            {{ "%.1f"|format(moist_values|min) }}%
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Maximum
+                                <span>
+                                    {% if data %}
+                                        {% set moist_values = data|map(attribute='moisture')|reject('none')|list %}
+                                        {% if moist_values %}
+                                            {{ "%.1f"|format(moist_values|max) }}%
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Average
+                                <span>
+                                    {% if data %}
+                                        {% set moist_values = data|map(attribute='moisture')|reject('none')|list %}
+                                        {% if moist_values %}
+                                            {{ "%.1f"|format(moist_values|sum / moist_values|length) }}%
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- pH Stats -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-flask"></i> pH</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Minimum
+                                <span>
+                                    {% if data %}
+                                        {% set ph_values = data|map(attribute='ph')|reject('none')|list %}
+                                        {% if ph_values %}
+                                            {{ "%.1f"|format(ph_values|min) }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Maximum
+                                <span>
+                                    {% if data %}
+                                        {% set ph_values = data|map(attribute='ph')|reject('none')|list %}
+                                        {% if ph_values %}
+                                            {{ "%.1f"|format(ph_values|max) }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Average
+                                <span>
+                                    {% if data %}
+                                        {% set ph_values = data|map(attribute='ph')|reject('none')|list %}
+                                        {% if ph_values %}
+                                            {{ "%.1f"|format(ph_values|sum / ph_values|length) }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js plugins -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js"></script>
+
+<!-- Date range picker -->
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<!-- Dashboard scripts -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts
+        initializeCharts();
+        
+        // Setup filters
+        setupFilters();
+        
+        // Setup export button
+        document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
+        
+        // Setup compare button
+        document.getElementById('compare-btn').addEventListener('click', function() {
+            const compareContainer = document.getElementById('comparison-container');
+            const dateRangeContainer = document.getElementById('date-range-container');
+            
+            if (compareContainer.classList.contains('d-none')) {
+                compareContainer.classList.remove('d-none');
+                dateRangeContainer.classList.add('d-none');
+                this.classList.add('active');
+                initDateRangePickers();
+            } else {
+                compareContainer.classList.add('d-none');
+                this.classList.remove('active');
+            }
+        });
+        
+        // Setup custom date range
+        document.getElementById('apply-date-range').addEventListener('click', function() {
+            const startDate = document.getElementById('custom-start-date').value;
+            const endDate = document.getElementById('custom-end-date').value;
+            
+            // Validate dates
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date must be before end date.');
+                return;
+            }
+            
+            // Redirect to same page with custom date range parameters
+            window.location.href = `{{ url_for('history') }}?start=${startDate}&end=${endDate}`;
+        });
+        
+        // Setup chart view toggles
+        document.getElementById('view-line').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('view-bar').classList.remove('active');
+            // Change chart type
+            if (currentChart) {
+                currentChart.config.type = 'line';
+                currentChart.update();
+            }
+        });
+        
+        document.getElementById('view-bar').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('view-line').classList.remove('active');
+            // Change chart type
+            if (currentChart) {
+                currentChart.config.type = 'bar';
+                currentChart.update();
+            }
+        });
+    });
+    
+    function setupFilters() {
+        // Setup custom date range toggle
+        const periodLinks = document.querySelectorAll('.filter-group .btn-group a');
+        const dateRangeContainer = document.getElementById('date-range-container');
+        
+        periodLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.textContent.trim() === 'Custom') {
+                    e.preventDefault();
+                    dateRangeContainer.classList.remove('d-none');
+                } else {
+                    dateRangeContainer.classList.add('d-none');
+                }
+            });
+        });
+        
+        // Setup parameter selector
+        const paramSelector = document.getElementById('param-selector');
+        paramSelector.addEventListener('change', function() {
+            // Get current period
+            const activePeriod = document.querySelector('.filter-group .btn-group a.btn-primary').getAttribute('href');
+            const period = new URLSearchParams(activePeriod.split('?')[1]).get('period') || '1d';
+            
+            // Update chart
+            fetchChartData(this.value, period);
+        });
+    }
+    
+    function initDateRangePickers() {
+        // Initialize date range pickers for comparison mode
+        $('.date-range').daterangepicker({
+            opens: 'left',
+            maxDate: new Date(),
+            ranges: {
+               'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+               'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+               'This Month': [moment().startOf('month'), moment().endOf('month')],
+               'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        });
+    }
+    
+    function exportCSV() {
+        // Get current filter parameters
+        const period = '{{ period }}';
+        
+        // Create a temporary link to download the file
+        const a = document.createElement('a');
+        a.href = `/api/export-csv?period=${period}`;
+        a.download = `sensor-data-${period}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+</script>
+{% endblock %}

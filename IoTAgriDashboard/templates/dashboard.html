@@ -1,0 +1,466 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - AgriIoT{% endblock %}
+
+{% block content %}
+    <div class="page-header d-flex justify-content-between align-items-center">
+    <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+    <div>
+        <a href="{{ url_for('device_data', device_id=device_id) }}" class="btn btn-outline-primary btn-sm me-2">
+            <i class="fas fa-database"></i> Voir les données détaillées
+        </a>
+        <span class="badge bg-secondary">Device ID: {{ device_id }}</span>
+        <span class="ms-2 text-muted small">Last updated: <span id="last-updated">
+            {% if sensor_data %}
+                {{ sensor_data.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+                N/A
+            {% endif %}
+        </span></span>
+    </div>
+</div>
+
+<!-- Soil Sensors Section -->
+<div class="card slide-in">
+    <div class="card-header">
+        <h5 class="card-title"><i class="fas fa-seedling"></i> Soil Parameters</h5>
+    </div>
+    <div class="card-body">
+        <div class="widget-container">
+            <!-- Moisture Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-tint sensor-icon"></i>
+                    <span class="sensor-label">Soil Moisture</span>
+                    <span class="sensor-value" id="moisture-value">
+                        {% if sensor_data and sensor_data.moisture %}
+                            {{ "%.1f"|format(sensor_data.moisture) }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Temperature Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-thermometer-half sensor-icon"></i>
+                    <span class="sensor-label">Soil Temperature</span>
+                    <span class="sensor-value" id="temperature-value">
+                        {% if sensor_data and sensor_data.temperature %}
+                            {{ "%.1f"|format(sensor_data.temperature) }}°C
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- pH Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-flask sensor-icon"></i>
+                    <span class="sensor-label">Soil pH</span>
+                    <span class="sensor-value" id="ph-value">
+                        {% if sensor_data and sensor_data.ph %}
+                            {{ "%.1f"|format(sensor_data.ph) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- EC Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-bolt sensor-icon"></i>
+                    <span class="sensor-label">EC</span>
+                    <span class="sensor-value" id="ec-value">
+                        {% if sensor_data and sensor_data.ec %}
+                            {{ sensor_data.ec }} µS/cm
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nutrients Section -->
+<div class="card slide-in">
+    <div class="card-header">
+        <h5 class="card-title"><i class="fas fa-leaf"></i> Nutrients (NPK)</h5>
+    </div>
+    <div class="card-body">
+        <div class="widget-container">
+            <!-- Nitrogen Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <span class="sensor-icon">N</span>
+                    <span class="sensor-label">Nitrogen</span>
+                    <span class="sensor-value" id="nitrogen-value">
+                        {% if sensor_data and sensor_data.nitrogen %}
+                            {{ sensor_data.nitrogen }} mg/kg
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Phosphorous Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <span class="sensor-icon">P</span>
+                    <span class="sensor-label">Phosphorous</span>
+                    <span class="sensor-value" id="phosphorous-value">
+                        {% if sensor_data and sensor_data.phosphorous %}
+                            {{ sensor_data.phosphorous }} mg/kg
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Potassium Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <span class="sensor-icon">K</span>
+                    <span class="sensor-label">Potassium</span>
+                    <span class="sensor-value" id="potassium-value">
+                        {% if sensor_data and sensor_data.potassium %}
+                            {{ sensor_data.potassium }} mg/kg
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Salinity Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-water sensor-icon"></i>
+                    <span class="sensor-label">Salinity</span>
+                    <span class="sensor-value" id="salinity-value">
+                        {% if sensor_data and sensor_data.salinity %}
+                            {{ "%.1f"|format(sensor_data.salinity) }} ppt
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Environmental Section -->
+<div class="card slide-in">
+    <div class="card-header">
+        <h5 class="card-title"><i class="fas fa-cloud-sun"></i> Environmental Conditions</h5>
+    </div>
+    <div class="card-body">
+        <div class="widget-container">
+            <!-- Air Temperature Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-temperature-high sensor-icon"></i>
+                    <span class="sensor-label">Air Temperature</span>
+                    <span class="sensor-value" id="bme-temperature-value">
+                        {% if sensor_data and sensor_data.bme_temperature %}
+                            {{ "%.1f"|format(sensor_data.bme_temperature) }}°C
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Humidity Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-tint sensor-icon"></i>
+                    <span class="sensor-label">Humidity</span>
+                    <span class="sensor-value" id="bme-humidity-value">
+                        {% if sensor_data and sensor_data.bme_humidity %}
+                            {{ "%.1f"|format(sensor_data.bme_humidity) }}%
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Pressure Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-compress-alt sensor-icon"></i>
+                    <span class="sensor-label">Pressure</span>
+                    <span class="sensor-value" id="bme-pressure-value">
+                        {% if sensor_data and sensor_data.bme_pressure %}
+                            {{ "%.1f"|format(sensor_data.bme_pressure) }} hPa
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- UV Index Widget -->
+            <div class="card">
+                <div class="sensor-card">
+                    <i class="fas fa-sun sensor-icon"></i>
+                    <span class="sensor-label">UV Index</span>
+                    <span class="sensor-value" id="uv-index-value">
+                        {% if sensor_data and sensor_data.uv_index %}
+                            {{ "%.1f"|format(sensor_data.uv_index) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <!-- Rain Sensor -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-cloud-rain"></i> Rain Detection</h5>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span id="rain-status" class="
+                                    {% if sensor_data and sensor_data.rain_level %}
+                                        {% if sensor_data.rain_level < 30 %}
+                                            text-danger
+                                        {% elif sensor_data.rain_level < 70 %}
+                                            text-warning
+                                        {% else %}
+                                            text-success
+                                        {% endif %}
+                                    {% else %}
+                                        text-muted
+                                    {% endif %}
+                                ">
+                                    {% if sensor_data and sensor_data.rain_level %}
+                                        {% if sensor_data.rain_level < 30 %}
+                                            Heavy rain detected
+                                        {% elif sensor_data.rain_level < 70 %}
+                                            Light rain detected
+                                        {% else %}
+                                            No rain detected
+                                        {% endif %}
+                                    {% else %}
+                                        No data available
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="sensor-value" id="rain-level-value">
+                                    {% if sensor_data and sensor_data.rain_level %}
+                                        {{ sensor_data.rain_level }}%
+                                    {% else %}
+                                        --
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Battery Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-battery-half"></i> Battery Status</h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span id="battery-percentage">
+                                {% if sensor_data and sensor_data.battery_percentage %}
+                                    {{ sensor_data.battery_percentage }}%
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </span>
+                            <span id="battery-voltage" class="text-muted">
+                                {% if sensor_data and sensor_data.battery_voltage %}
+                                    {{ "%.2f"|format(sensor_data.battery_voltage) }}V
+                                {% else %}
+                                    --
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="battery-indicator mt-2">
+                            <div id="battery-level" class="battery-level
+                                {% if sensor_data and sensor_data.battery_percentage %}
+                                    {% if sensor_data.battery_percentage < 10 %}
+                                        battery-critical
+                                    {% elif sensor_data.battery_percentage < 20 %}
+                                        battery-low
+                                    {% endif %}
+                                {% endif %}
+                            " style="width: 
+                                {% if sensor_data and sensor_data.battery_percentage %}
+                                    {{ sensor_data.battery_percentage }}%
+                                {% else %}
+                                    0%
+                                {% endif %}
+                            "></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Section -->
+<div class="card slide-in">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title" id="chart-title"><i class="fas fa-chart-line"></i> Recent Trends</h5>
+        <div class="d-flex">
+            <select id="param-selector" class="form-select form-select-sm me-2">
+                <option value="temperature">Soil Temperature</option>
+                <option value="moisture">Soil Moisture</option>
+                <option value="ph">Soil pH</option>
+                <option value="ec">Electrical Conductivity</option>
+                <option value="nitrogen">Nitrogen</option>
+                <option value="phosphorous">Phosphorous</option>
+                <option value="potassium">Potassium</option>
+                <option value="bme_temperature">Air Temperature</option>
+                <option value="bme_humidity">Humidity</option>
+                <option value="bme_pressure">Pressure</option>
+                <option value="uv_index">UV Index</option>
+                <option value="rain_level">Rain Level</option>
+            </select>
+            <select id="period-selector" class="form-select form-select-sm">
+                <option value="1d">Last 24 hours</option>
+                <option value="1w">Last week</option>
+                <option value="1m">Last month</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="chart-container" class="chart-container">
+            <canvas id="main-chart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Weather & Alerts Section -->
+<div class="row">
+    <!-- Weather Widget -->
+    <div class="col-md-6">
+        <div class="card slide-in">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-cloud-sun"></i> Current Weather</h5>
+            </div>
+            <div class="card-body weather-card">
+                {% if weather %}
+                    <div id="weather-main" class="d-none">{{ weather.weather_main }}</div>
+                    <i id="weather-icon" class="fas fa-cloud weather-icon"></i>
+                    <div class="weather-temp">{{ "%.1f"|format(weather.temperature) }} °C</div>
+                    <div class="weather-desc">{{ weather.weather_description }}</div>
+                    <div class="weather-details mt-4">
+                        <div class="weather-detail">
+                            <i class="fas fa-tint"></i>
+                            <div>{{ weather.humidity }}%</div>
+                            <div class="text-muted small">Humidity</div>
+                        </div>
+                        <div class="weather-detail">
+                            <i class="fas fa-wind"></i>
+                            <div>{{ "%.1f"|format(weather.wind_speed) }} m/s</div>
+                            <div class="text-muted small">Wind</div>
+                        </div>
+                        <div class="weather-detail">
+                            <i id="wind-direction-icon" class="fas fa-arrow-up"></i>
+                            <div id="wind-direction" data-direction="{{ weather.wind_direction }}">{{ weather.wind_direction }}°</div>
+                            <div class="text-muted small">Direction</div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-cloud-sun fa-3x mb-3"></i>
+                        <p>Weather data not available</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts & Notifications -->
+    <div class="col-md-6">
+        <div class="card slide-in">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-bell"></i> Alerts & Notifications</h5>
+            </div>
+            <div class="card-body">
+                <div class="alerts-container">
+                    {% if alerts %}
+                        {% for alert in alerts %}
+                            <div class="alert-item alert-{{ alert.level }}" data-alert-id="{{ alert.id }}">
+                                <div>
+                                    <strong>{{ alert.timestamp.strftime('%Y-%m-%d %H:%M') }}</strong>
+                                    <p class="mb-0">{{ alert.message }}</p>
+                                </div>
+                                <div class="alert-actions">
+                                    <button class="acknowledge-alert" data-alert-id="{{ alert.id }}">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No active alerts.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Analysis Section -->
+<div class="card slide-in mt-4">
+    <div class="card-header">
+        <h5 class="card-title"><i class="fas fa-robot"></i> AI Analysis & Recommendations</h5>
+    </div>
+    <div class="card-body">
+        {% if analysis %}
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="mb-3">Analysis</h6>
+                    <p>{{ analysis.analysis_text|nl2br }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="mb-3">Recommendations</h6>
+                    <p>{{ analysis.recommendations|nl2br }}</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-robot fa-3x mb-3"></i>
+                <p>AI analysis will be available after collecting more data</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js plugins -->
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0/dist/chartjs-adapter-moment.min.js"></script>
+
+<!-- Dashboard scripts -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/alerts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/weather.js') }}"></script>
+{% endblock %}

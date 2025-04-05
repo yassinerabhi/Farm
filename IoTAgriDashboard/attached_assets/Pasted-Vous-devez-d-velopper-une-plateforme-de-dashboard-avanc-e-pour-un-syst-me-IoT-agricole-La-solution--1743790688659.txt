@@ -1,0 +1,29 @@
+Vous devez développer une plateforme de dashboard avancée pour un système IoT agricole. La solution doit récupérer et afficher les données issues d’un ensemble de capteurs (température, humidité, pH, conductivité, nutriments, etc.) via le code capteur Arduino fourni. Le dashboard doit également intégrer une analyse prédictive via l’API Gemini 2.5 et afficher en temps réel les données météorologiques obtenues par l’API OpenWeatherMap.
+Exigences fonctionnelles :
+1.	Interface utilisateur et sécurité
+o	Créer une page de connexion moderne et sécurisée permettant l’authentification par identifiant d’appareil (avec possibilité d’étendre à d’autres méthodes d’authentification).
+o	Proposer une interface responsive (adaptée à ordinateurs, tablettes et smartphones) avec support du thème sombre/clair et animations interactives.
+2.	Tableau de bord principal
+o	Afficher en temps réel les dernières mesures des capteurs sous forme de widgets dynamiques.
+o	Intégrer des graphiques interactifs (courbes de tendance, scatter plots, histogrammes) permettant de visualiser l’évolution des paramètres sur différentes périodes (jour, semaine, année).
+o	Mettre en place un système de notifications/alertes pour signaler tout dépassement de seuil critique.
+3.	Intégration des données externes
+o	Récupérer et afficher les données météo en temps réel via l’API OpenWeatherMap (température, humidité, précipitations, vent, etc.) dans une section dédiée.
+o	Envoyer les données capteurs à l’API Gemini 2.5 pour réaliser une analyse prédictive et générer des recommandations (ex. irrigation, fertilisation, gestion du stress hydrique), puis afficher ces prévisions et conseils dans le dashboard.
+4.	Génération de rapports et analyse approfondie
+o	Intégrer une fonctionnalité permettant de générer et exporter des rapports PDF détaillés. Le rapport devra inclure une introduction, l’analyse des données (avec graphiques et tableaux), des recommandations personnalisées, une conclusion et des annexes.
+o	Permettre l’accès à l’historique des données et offrir la possibilité de comparer différentes périodes.
+5.	Navigation et ergonomie
+o	Concevoir un menu de navigation fluide (latéral ou flottant) pour accéder rapidement aux différentes sections (données en temps réel, historique, analyses, rapports, paramètres).
+o	Proposer des options de filtrage, tri et recherche pour personnaliser l’affichage des données.
+Contraintes techniques :
+•	Backend : Utiliser Python avec Flask pour gérer l’authentification, les API internes et l’intégration des données.
+•	Frontend : Développer l’interface. L’emploi d’un framework moderne  est recommandé pour une interface dynamique.
+•	Base de données : Utiliser SQLite pour stocker l’historique des données et les logs.
+•	Sécurité : Mettre en place HTTPS, une gestion sécurisée des sessions et le chiffrement des données sensibles.
+Livrables attendus :
+•	Le code source complet (backend et frontend) de la plateforme.
+•	Une documentation technique détaillée (guide d’installation, configuration des API, utilisation, etc.).
+•	Des instructions de déploiement pour un environnement de production.
+Utilisez le code capteur Arduino existant pour assurer la continuité des données entre le microcontrôleur et le dashboard.
+
